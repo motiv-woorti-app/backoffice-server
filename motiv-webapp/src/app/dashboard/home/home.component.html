@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<div class="dashWrapper">
+
+<div *ngIf="response">
+    <h6>Response code : {{ response }}</h6>
+  </div>
+
+  <div>
+    <h6>Logged-in user:</h6>
+    <h6>Email: <b>{{ authService.getCurrentUser().email }}</b>, UserId: <b>{{ authService.getCurrentUser().uid }}</b></h6>
+    
+    <div *ngIf= "this.authService.checkAnyOfRoles(['Admin'])" >
+        <button (click)="getToken()" type="submit" class="btn btn-primary">Get token</button>
+        <div *ngIf="token">
+          <div class="form-group">
+            <label for="exampleFormControlTextarea1">Received token:</label>
+            <textarea class="form-control" id="exampleFormControlTextarea1" rows="4">{{token}}</textarea>
+          </div>
+        </div>
+        <div style="padding-top: 0.2cm">
+          <button class="btn btn-primary" (click)="updateUsersInSurveyByTargetCampaign()">Update users of surveys by target campaigns</button>
+          <p *ngIf="this.usersUpdatedByTargetCampaign">Status: users updated!</p>
+        </div>
+
+        <div class="input-group mb-3" style="padding-top: 0.2cm">
+          <input type="text" class="form-control col-sm-2" [(ngModel)]='tripId' placeholder="TripId" aria-describedby="basic-addon2">
+          <div class="input-group-append">
+            <button (click)="getPoints()" class="btn btn-primary" type="button">Download Raw Data of Trip</button>
+          </div>
+        
+        </div>
+
+    </div>
+    
+  </div>
+
+  <div>
+    <h5>Global statistics:</h5>
+       
+    <h6><strong>Current week:</strong></h6>
+    <p>{{this.currWeekNumUsers}} active users (user with at least one trip submitted).</p>
+    <p>{{this.currWeekNumTrips}} submitted trips.</p>
+
+    <h6><strong>Current month:</strong></h6>
+    <p>{{this.currMonthNumUsers}} active users (user with at least one trip submitted).</p>
+    <p>{{this.currMonthNumTrips}} submitted trips.</p>
+
+    <h6><strong>Overall:</strong></h6>
+    <p>{{this.overallNumUsers}} active users (user with at least one trip submitted).</p>
+    <p>{{this.overallNumTrips}} submitted trips.</p>
+    <p>{{this.overallNumTripsWithoutDuplicates}} submitted trips (without duplicates).</p>
+
+
+    <h6><strong>By specific week:</strong></h6>
+    <mat-form-field>
+      <label for="timePickerWeek"> Select some day of the week that you want to analyze: </label>
+      <input matInput id="timePickerWeek" [matDatepicker]="pickerWeek" placeholder=""
+              (dateChange)="updateStatisticsBySpecificWeek($event.value)" disabled>
+      <mat-datepicker-toggle matSuffix [for]="pickerWeek"></mat-datepicker-toggle>
+      <mat-datepicker #pickerWeek disabled="false"></mat-datepicker>
+    </mat-form-field>
+    
+    <div *ngIf="this.specificNumUsersWeek !== undefined">
+      <p>Active users and reported trips <strong>from</strong> {{this.firstDaySpecificFilterWeek.format("MMMM Do YYYY")}} <strong>to</strong> {{this.lastDaySpecificFilterWeek.format("MMMM Do YYYY")}}:</p>
+      <p>{{this.specificNumUsersWeek}} active users (user with at least one trip submitted).</p>
+      <p>{{this.specificNumTripsWeek}} submitted trips.</p>
+    </div>
+
+
+
+    <h6><strong>By specific month:</strong></h6>
+    <mat-form-field>
+      <label for="timePickerMonth"> Select some day of the month that you want to analyze: </label>
+      <input matInput id="timePickerMonth" [matDatepicker]="pickerMonth" placeholder=""
+              (dateChange)="updateStatisticsBySpecificMonth($event.value)" disabled>
+      <mat-datepicker-toggle matSuffix [for]="pickerMonth"></mat-datepicker-toggle>
+      <mat-datepicker #pickerMonth disabled="false"></mat-datepicker>
+    </mat-form-field>
+    
+    <div *ngIf="this.specificNumUsersMonth !== undefined">
+      <p>Active users and reported trips <strong>from</strong> {{this.firstDaySpecificFilterMonth.format("MMMM Do YYYY")}} <strong>to</strong> {{this.lastDaySpecificFilterMonth.format("MMMM Do YYYY")}}:</p>
+      <p>{{this.specificNumUsersMonth}} active users (user with at least one trip submitted).</p>
+      <p>{{this.specificNumTripsMonth}} submitted trips.</p>
+    </div>
+    <div *ngIf="this.authService.checkAnyOfRoles(['Admin'])">
+      <button (click)="exportTripDigests()" type="submit" class="btn btn-primary">Export Trip Summaries</button>
+    </div>
+  </div>
+</div>

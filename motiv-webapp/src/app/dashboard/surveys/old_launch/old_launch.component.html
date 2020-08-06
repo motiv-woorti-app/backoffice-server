@@ -1,0 +1,187 @@
+<div class = "dashWrapper">
+
+  <div *ngIf="!this.launching">
+    <h2>
+      View launch
+    </h2>
+  </div>
+
+  <div *ngIf="this.launching">
+    <h2>
+      Launch survey
+    </h2>
+  </div>
+
+
+  <form (ngSubmit)="onSubmit()" #campaignCreateForm="ngForm">
+
+
+    <div id = "startPickerID">
+      <mat-form-field >
+        <input  [disabled]=!launching matInput [matDatepicker]="startPicker" placeholder="Choose a start launch date" label="Start Date" [value] = 'date.value'
+                (dateChange)="changeStartDate('change', $event)">
+        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+
+
+
+
+    <div *ngIf="this.launching">
+    <!-- <label for="targetAge">Age target range</label>
+    <div id = "targetAge">
+      <mat-form-field>
+        <input matInput type="number" min="1" max="122" placeholder="From" label="Age target" [(ngModel)]="fromTargetAge" (change)="recomputeTargetedUsers()" name="fromTargetAge">
+      </mat-form-field>
+
+      <mat-form-field >
+        <input matInput type="number" min="2" max="122" placeholder="To"  [(ngModel)]="toTargetAge" (change)="recomputeTargetedUsers()" name="toTargetAge">
+      </mat-form-field>
+    </div> -->
+
+
+    <label for="availableCampaigns">Available campaigns</label>
+    <div id = "availableCampaigns">
+
+      <!--all campaigns-->
+      <mat-table style="margin: 20px;" class="mat-elevation-z8" [dataSource]="getManagedCampaigns()">
+
+        <ng-container matColumnDef="campaignId">
+          <!--<div *matHeaderCellDef>Question</div>
+          <div *matCellDef="let question">{{question.question}}</div>
+    -->
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Campaign ID</mat-header-cell>
+          <mat-cell *matCellDef="let campaign">{{campaign.campaignId}}</mat-cell>
+
+        </ng-container>
+
+        <ng-container matColumnDef="campaignName">
+          <!--<div *matHeaderCellDef>Question</div>
+          <div *matCellDef="let question">{{question.question}}</div>
+    -->
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+          <mat-cell *matCellDef="let campaign">{{campaign.name}}</mat-cell>
+
+        </ng-container>
+
+        <ng-container matColumnDef="campaignCountryCity">
+          <!--<div *matHeaderCellDef>Type</div>
+          <div
+               *matCellDef="let question">{{question.type}}</div>-->
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Country City</mat-header-cell>
+          <mat-cell *matCellDef="let campaign">{{this.getCountryNameByIso(campaign.country) + " " + campaign.city}}</mat-cell>
+
+        </ng-container>
+
+        <ng-container matColumnDef="campaignActive">
+          <!--<div *matHeaderCellDef>Type</div>
+          <div
+               *matCellDef="let question">{{question.type}}</div>-->
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Active</mat-header-cell>
+          <mat-cell *matCellDef="let campaign">{{campaign.active}}</mat-cell>
+
+        </ng-container>
+
+        <ng-container matColumnDef="actionsColumn">
+
+          <mat-header-cell *matHeaderCellDef>Target campaign</mat-header-cell>
+
+          <mat-cell *matCellDef="let row">
+
+            <div *ngIf="this.targetedCampaigns.includes(row)">
+              <h2>
+                <button type="button" style="margin-right: 5px" class="btn" (click)="untargetCampaign(row)">Remove campaign</button>
+              </h2>
+            </div>
+
+            <div *ngIf="!this.targetedCampaigns.includes(row)">
+              <h2>
+                <button type="button" style="margin-right: 5px" class="btn" (click)="targetCampaign(row)">Target campaign</button>
+              </h2>
+            </div>
+
+          </mat-cell>
+
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="columnsToShowCampaign"></mat-header-row>
+
+        <mat-row *matRowDef="let row; columns: columnsToShowCampaign"></mat-row>
+
+      </mat-table>
+
+    </div>
+
+    </div>
+
+  <div style="margin-top: 10px;">
+
+    <mat-form-field>
+      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+    </mat-form-field>
+
+    <mat-table #uTable style="margin: 20px;" class="mat-elevation-z8" [dataSource]="users">
+
+      <ng-container matColumnDef="select">
+
+        <mat-header-cell  *matHeaderCellDef style="vertical-align: middle;">
+          <mat-checkbox [disabled]=!launching (change)="$event ? masterToggle() : null"
+          [checked]="selection.hasValue() && isAllSelected()"
+          [indeterminate]="selection.hasValue() && !isAllSelected()">
+          </mat-checkbox>
+          <div style="margin-left: 5px;"></div>
+        </mat-header-cell>
+
+
+
+        <mat-cell style="vertical-align: middle;" *matCellDef="let row">
+
+          <mat-checkbox [disabled]=!launching (click)="$event.stopPropagation()"
+                        (change)="$event ? selection.toggle(row) : null"
+                        [checked]="selection.isSelected(row)">
+          </mat-checkbox>
+
+        </mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="userid">
+        <!--<div *matHeaderCellDef>Question</div>
+        <div *matCellDef="let question">{{question.question}}</div>
+  -->
+        <mat-header-cell *matHeaderCellDef mat-sort-header>User ID</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{user.userid}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <!--<div *matHeaderCellDef>Question</div>
+        <div *matCellDef="let question">{{question.question}}</div>
+  -->
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{user.email}}</mat-cell>
+
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="columnsToShowUsers"></mat-header-row>
+
+      <mat-row *matRowDef="let row; columns: columnsToShowUsers"></mat-row>
+
+    </mat-table>
+
+  </div>
+
+
+    <div *ngIf="this.launching">
+      <h2>
+        <button type="submit" class="btn btn-success">Submit</button>
+      </h2>
+    </div>
+
+
+  </form>
+
+</div>
+

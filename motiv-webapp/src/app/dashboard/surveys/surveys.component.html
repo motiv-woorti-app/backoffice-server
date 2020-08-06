@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="dashWrapper">
+
+  <h1>
+    Questions
+  </h1>
+<div>
+  <button routerLink="createQuestion" class="btn btn-primary btn-block">Create new question</button>
+</div>
+
+
+<div *ngIf="getQuestions() !== undefined">
+  <mat-table style="margin: 20px;" class="mat-elevation-z8" [dataSource]="getQuestions()">
+
+    <ng-container matColumnDef="id">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>QuestionID</mat-header-cell>
+      <mat-cell *matCellDef="let question">{{question.questionId}}</mat-cell>
+
+    </ng-container>
+
+    <ng-container matColumnDef="question">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Question</mat-header-cell>
+      <mat-cell *matCellDef="let question">{{question.question[question.languageOfCreation]}}</mat-cell>
+
+    </ng-container>
+    
+
+    <ng-container matColumnDef="language">
+
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Language</mat-header-cell>
+      <mat-cell *matCellDef="let question">{{this.surveyConnection.getLanguageNameByIso(question.languageOfCreation)}}</mat-cell>
+
+    </ng-container>
+
+    <ng-container matColumnDef="type">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Type</mat-header-cell>
+      <mat-cell *matCellDef="let question">{{this.surveyConnection.getQuestionTypeName(question.questionType)}}</mat-cell>
+
+    </ng-container>
+
+    <ng-container matColumnDef="deleted">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Deleted</mat-header-cell>
+      <mat-cell *matCellDef="let question">{{question.deleted}}</mat-cell>
+
+    </ng-container>
+
+    <ng-container matColumnDef="actionsColumn">
+
+      <mat-header-cell *matHeaderCellDef>Delete</mat-header-cell>
+      <mat-cell *matCellDef="let question">
+        <button class="btn" style="margin-right: 5px;" (click)="deleteQuestion(question)">Delete</button>
+
+        <button class="btn" style="margin-right: 5px;" [routerLink]="['addQuestionTranslation', question.questionId]" >Manage translations</button>
+      </mat-cell>
+
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="columnsToShowQuestion"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: columnsToShowQuestion"></mat-row>
+
+  </mat-table>
+</div>
+
+  <h1>
+    Surveys
+  </h1>
+
+  <div>
+    <button routerLink="createSurvey" class="btn btn-primary btn-block">Create new survey</button>
+  </div>
+
+  <div *ngIf="getSurveys() !== undefined">
+    <mat-table style="margin: 20px;" class="mat-elevation-z8" [dataSource]="getSurveys()">
+
+      <ng-container matColumnDef="id">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Survey ID</mat-header-cell>
+        <mat-cell *matCellDef="let survey">{{survey.surveyID}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="version">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Version</mat-header-cell>
+        <mat-cell *matCellDef="let survey">{{survey.version}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Survey name</mat-header-cell>
+        <mat-cell *matCellDef="let survey">{{survey.surveyName}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Type</mat-header-cell>
+        <mat-cell *matCellDef="let survey">{{this.surveyConnection.getSurveyTypeName(survey.surveyType)}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="deleted">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Deleted</mat-header-cell>
+        <mat-cell *matCellDef="let survey">{{survey.deleted}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="urgent">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Urgent</mat-header-cell>
+        <mat-cell *matCellDef="let survey">{{survey.urgent}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="launched">
+
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Survey status</mat-header-cell>
+        <mat-cell *matCellDef="let survey">{{ this.surveyStatus(survey) }}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="actionsColumn">
+
+        <mat-header-cell *matHeaderCellDef style="justify-content: center;">Available actions</mat-header-cell>
+
+        <mat-cell *matCellDef="let survey" style="justify-content: center;">
+
+          <button mat-button [matMenuTriggerFor]="menu">Actions</button>
+          <mat-menu #menu="matMenu">
+            <div *ngIf="!survey.launch">
+              <button mat-menu-item style="margin-right: 5px;" class="btn" (click)="launchSurvey(survey)">Launch</button>
+              <button mat-menu-item class="btn" (click)="this.editSurvey(survey)"> Edit Survey</button>
+            </div>
+            <div *ngIf="survey.launch">
+              <button mat-menu-item class="btn" [routerLink]="['viewSurvey', survey.surveyID]"> View launched Survey</button>
+              <button mat-menu-item class="btn" (click)="this.deactivateSurvey(survey)"> Deactivate Survey</button>
+            </div>
+            <button mat-menu-item class="btn" (click)="this.duplicateSurvey(survey)"> Duplicate Survey</button>
+            
+          </mat-menu>
+
+        </mat-cell>
+
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="columnsToShowSurveys"></mat-header-row>
+
+      <mat-row *matRowDef="let row; columns: columnsToShowSurveys"></mat-row>
+
+    </mat-table>
+  </div>
+
+
+</div>
+
+<div *ngIf="this.authService.checkAnyOfRoles(['Admin', 'Manager', 'CM']) && getSurveys() !== undefined">
+  <h2>
+    Export the Survey data:
+  </h2>
+
+  <div>
+      <mat-form-field>
+          <mat-select placeholder="Survey:" [(ngModel)]="this.selectedSurveyToExport">
+              <mat-option *ngFor="let survey of listOfsurveysData" [value]="survey">
+                  {{ survey.surveyName }}
+              </mat-option>
+          </mat-select>
+        </mat-form-field>
+    
+        <mat-form-field>
+          <mat-select placeholder="Format:" [(ngModel)]="this.selectedFormat">
+              <mat-option [value]="'JSON'">JSON</mat-option>
+              <mat-option [value]="'CSV'">CSV</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button class="btn" (click)="exportAnswersOfSurvey()">Export survey answers</button>
+        <button class="btn" (click)="exportAnswersOfSurveyFormat2()">Export survey answers csv v2</button>
+  </div>
+</div>
+</body>
+</html>

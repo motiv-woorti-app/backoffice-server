@@ -1,0 +1,195 @@
+<div class="dashWrapper">
+  <h2>
+    Reported issues:
+  </h2>
+
+  <div *ngIf="this.authService.checkRole('Admin')">
+    <button routerLink="create" class="btn btn-primary btn-block">Create new report</button>
+  </div>
+
+  <h6><strong>Time interwal by week:</strong></h6>
+    <mat-form-field>
+      <label for="timePickerWeek"> Select some day of the week that you want to analyze: </label>
+      <input matInput id="timePickerWeek" [matDatepicker]="pickerWeek" placeholder=""
+              (dateChange)="updateReportsBySelectedWeek($event.value)" disabled>
+      <mat-datepicker-toggle matSuffix [for]="pickerWeek"></mat-datepicker-toggle>
+      <mat-datepicker #pickerWeek disabled="false"></mat-datepicker>
+    </mat-form-field>
+
+
+    <h6><strong>Time interwal by month:</strong></h6>
+    <mat-form-field>
+      <label for="timePickerMonth"> Select some day of the month that you want to analyze: </label>
+      <input matInput id="timePickerMonth" [matDatepicker]="pickerMonth" placeholder=""
+              (dateChange)="updateReportsBySelectedMonth($event.value)" disabled>
+      <mat-datepicker-toggle matSuffix [for]="pickerMonth"></mat-datepicker-toggle>
+      <mat-datepicker #pickerMonth disabled="false"></mat-datepicker>
+    </mat-form-field>
+      
+    
+
+  <div *ngIf="this.authService.checkRole('Admin')">
+
+    <h5>
+      Filters:
+    </h5>
+    <div>
+      <mat-form-field>
+        <mat-select placeholder="Filter by issue type:" [(ngModel)]="this.selectedIssueType">
+            <mat-option *ngFor="let issueType of this.issueTypes" [value]="issueType">
+                {{ issueType }}
+            </mat-option>
+        </mat-select>
+      </mat-form-field>
+    
+      <mat-form-field>
+          <mat-select placeholder="Filter by issue priority:" [(ngModel)]="this.selectedIssuePriority">
+              <mat-option [value]="'Show all'">Show all</mat-option>
+              <mat-option *ngFor="let prior of possibleErrorPriorities" [value]="prior">
+                  {{ prior }}
+              </mat-option>
+          </mat-select>
+        </mat-form-field>
+    
+        <mat-form-field>
+            <mat-select placeholder="Filter by origin of report:" [(ngModel)]="this.selectedOriginOfReport">
+                <mat-option *ngFor="let origin of possibleOriginsOfReport" [value]="origin">
+                    {{ origin }}
+                </mat-option>
+            </mat-select>
+          </mat-form-field>
+    </div>
+    
+    
+    <div>
+      <mat-form-field>
+        <input matInput placeholder="Filter by email" [(ngModel)]="this.emailToFilter">
+      </mat-form-field>
+    </div>
+    
+    <div>
+      <button class="btn btn-primary" (click)="this.applyFilters()">Apply filters</button>
+      <button class="btn" (click)="this.cleanFilters()">Clean filters</button>
+    </div>
+
+  </div>
+
+
+
+
+<div *ngIf="this.filteredIssuesToResolve">
+    <p>Number of reports: {{this.filteredIssuesToResolve.length}}</p>
+    <p>Reported <strong>from</strong> {{this.firstDay.format("MMMM Do YYYY")}} <strong>to</strong> {{this.lastDay.format("MMMM Do YYYY")}}:</p>
+</div>
+
+  <div *ngIf="this.filteredIssuesToResolve !== undefined && this.authService.checkRole('Admin')" class="example-container mat-elevation-z8">
+
+    <mat-table #table [dataSource]="this.filteredIssuesToResolve">
+
+      <ng-container matColumnDef="reportid">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Report ID</mat-header-cell>
+        <mat-cell *matCellDef="let report">{{report._id}}</mat-cell>
+      </ng-container>
+      
+      <ng-container matColumnDef="userid">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>User's email</mat-header-cell>
+        <mat-cell *matCellDef="let report">{{this.getEmailByReport(report)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="answerDate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Answer Date</mat-header-cell>
+        <mat-cell *matCellDef="let report">{{getReadableTime(report.answerDate)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="reportingOs">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>OS</mat-header-cell>
+        <mat-cell *matCellDef="let report">{{report.reportingOS}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="errorType">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Issue type</mat-header-cell>
+        <mat-cell *matCellDef="let report">{{this.getErrorType(report)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="analysedDate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Analysed date</mat-header-cell>
+        
+        <mat-cell *matCellDef="let report">
+          <div *ngIf="this.reportWasAnalysed(report)">
+            {{getReadableTime(report.analysedDate)}}
+          </div>
+          <div *ngIf="!this.reportWasAnalysed(report)">
+            <button class="btn" (click)="analyseReport(report)">Analysed!</button>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="addressedDate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Addressed date</mat-header-cell>
+        
+        <mat-cell *matCellDef="let report">
+          <div *ngIf="this.reportWasAddressed(report)">
+            {{getReadableTime(report.addressedDate)}}
+          </div>
+          <div *ngIf="!this.reportWasAddressed(report)">
+            <button class="btn" (click)="addressReport(report)">Addressed!</button>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="errorPriority">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Issue priority</mat-header-cell>
+        <mat-cell *matCellDef="let report">{{this.getErrorPriority(report)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="reportedBy">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Reported By</mat-header-cell>
+        <mat-cell *matCellDef="let report">{{this.originOfReport(report)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actionsColumn">
+        <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+        <mat-cell *matCellDef="let report">
+          <button style="margin-left: 10px" class="btn btn-primary" [routerLink]="['read', report._id]">View report</button>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="comments">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Comments</mat-header-cell>
+        <mat-cell *matCellDef="let report">
+          <textarea class="form-control" id="commentsTextArea" rows="1" [(ngModel)]="report.comments" name="descr"></textarea>
+          <button class="btn" (click)="addComment(report)">Save!</button>
+        </mat-cell>
+      </ng-container>
+
+      
+
+      <mat-header-row *matHeaderRowDef="columnsToShowReporting"></mat-header-row>
+
+      <mat-row *matRowDef="let row; columns: columnsToShowReporting; let entry" [ngClass]="{ 'highlight': this.isWebReport(entry) }"></mat-row>
+
+    </mat-table>
+  </div>
+  <div *ngIf="this.authService.checkRole('Admin')">
+    <button (click)="getUsersEmails()" type="button" class="btn btn-primary">Get users email list</button>
+    <div *ngIf="this.usersEmailsVisible" style="margin-top: 10px;">
+      <div class="form-group">
+        <label for="exampleFormControlTextarea1">Users email list:</label>
+        <textarea class="form-control" id="exampleFormControlTextarea1" rows="1">{{usersEmails}}</textarea>
+      </div>
+    </div>
+  </div>
+
+
+  <div *ngIf="this.statisticsPerIssueType !== undefined" >
+    <h4>
+      Number of reports for each issue type:
+    </h4>
+    <p><strong>Trip not detected</strong>: {{this.getStatsPerIssueType("Trip not detected")}}</p>
+    <p><strong>Trip wrongly detected</strong>: {{this.getStatsPerIssueType("Trip wrongly detected")}}</p>
+    <p><strong>Wrong mode</strong>: {{this.getStatsPerIssueType("Wrong mode")}}</p>
+    <p><strong>UI/UX</strong>: {{this.getStatsPerIssueType("UI/UX")}}</p>
+    
+  </div>
+
+</div>

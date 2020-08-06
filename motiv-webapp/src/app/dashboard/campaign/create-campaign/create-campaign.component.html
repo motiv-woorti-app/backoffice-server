@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>C</title>
+</head>
+<body>
+
+<div class = dashWrapper>
+
+  <div *ngIf="!this.editing">
+    <h2>
+      Create new campaign
+    </h2>
+  </div>
+
+  <div *ngIf="this.editing">
+    <h2>
+      Edit campaign
+    </h2>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" #campaignCreateForm="ngForm">
+
+  <div class="form-group">
+          <label for="typeOfCampaign">Campaign type:</label>
+          <select class="form-control" id="typeOfCampaign"
+          required
+          [(ngModel)]="currentType" name="type">
+            <option *ngFor="let type of campaignTypes" [value]="type">{{type}}</option>
+          </select>
+  </div>
+
+  <div *ngIf="currentType === 'Private'" class="form-group">
+      <mat-form-field class="example-full-width">
+          <input matInput placeholder="Private code" [(ngModel)]="privateCode" [value]="privateCode" name="privateCode" #name="ngModel" required>
+        </mat-form-field>
+        <button class="btn" type="button" (click)="validatePrivateCode()">Validate code</button>
+  </div>
+
+  <div class="form-group">
+    <mat-form-field class="example-full-width">
+      <input matInput placeholder="Campaign name" [(ngModel)]="campaignName" [value]="campaignName" name="name" #name="ngModel" required>
+    </mat-form-field>
+  </div>
+
+  <div class="form-group">
+      <label for="descriptionTextArea">Description of the campaign:</label>
+      <textarea class="form-control" id="descriptionTextArea" rows="1" [(ngModel)]="campaignDescription" name="descr"></textarea>
+  </div>
+  <div class="form-group">
+
+    <label for="campaignCountry">Country:</label>
+    <select class="form-control" id="campaignCountry" name="campaignCountry" [(ngModel)]="this.campaignCountryIdx" required>
+      <option *ngFor="let country of listOfCountries; let idx = index;" [value]="idx"> {{country.name}}</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="city">City:</label>
+    <select class="form-control" id="city" [(ngModel)]="this.campaignCityIdx" name="campaign_city" required>
+        <option *ngFor="let city of this.getCitiesOfCurrentCountry(); let idx = index;" [value]="idx"> {{city}}</option>
+        <option [value]='-3'>Any by radius</option>
+        <option [value]='-2'>Any city</option>
+        <option [value]='-1'>Others- Please Specify Below</option>
+    </select>
+ </div>
+  <div class="form-group" *ngIf="this.campaignCityIdx === '-1'">
+    <label for="cityOther">Enter Other city:</label>
+    <input type="text" class="form-control" id="cityOther" [(ngModel)]="this.cityOtherText" name="other_campaign_city" required>
+  </div>
+    <ng-container *ngIf="this.campaignCityIdx === '-3'">
+      <agm-map [latitude]="initLat" [longitude]="initLng" [zoom]="6">
+      <agm-circle
+        [latitude]="initLat"
+        [longitude]="initLng"
+        [(radius)]="this.radius"
+        [clickable]="true"
+        [editable]="true"
+        [fillColor]="'blue'"
+        [fillOpacity]="0.3"
+        [circleDraggable]="false"
+        (centerChange)="centerChange($event)"
+      >
+      </agm-circle>
+  
+      </agm-map>
+      <p>latitude: {{this.lat}}</p>
+      <p>longitude: {{this.lng}}</p>
+      <p>radius: {{this.radius.toFixed(3)}} meters</p>
+    </ng-container>
+
+
+  <h3>
+      Points attributed according to a specific task:
+  </h3>
+
+  <div class="form-group">
+      <label for="pointsForTripPurpose">Purpose of the trip:</label>
+      <mat-form-field class="example-full-width">
+        <input matInput id="pointsForTripPurpose" [(ngModel)]="pointsTripPurpose" name="tripPurpose" required>
+      </mat-form-field>  
+        
+      <label for="pointsForTransportMode">Transport mode validation of a leg:</label>
+      <mat-form-field class="example-full-width">
+        <input matInput id="pointsForTransportMode" [(ngModel)]="pointsTransportMode" name="transportMode" required>
+      </mat-form-field>
+
+      <label for="pointsForWorthwhileness">Worthwhileness elements of a leg:</label>
+      <mat-form-field class="example-full-width">
+          <input matInput id="pointsForWorthwhileness" [(ngModel)]="pointsWorth" name="worth" required>
+      </mat-form-field>
+
+      <label for="pointsForActivities">Activities of a leg:</label>
+      <mat-form-field class="example-full-width">
+          <input matInput id="pointsForActivities" [(ngModel)]="pointsActivities" name="activities" required>
+      </mat-form-field>
+
+      <label for="pointsForAllInfo">Completion of all the onformation of a trip:</label>
+      <mat-form-field class="example-full-width">
+          <input matInput id="pointsForAllInfo" [(ngModel)]="pointsAllInfo" name="allInfo" required>
+      </mat-form-field>
+        
+  </div>
+
+  <h3>
+    Select campaign managers
+  </h3>
+
+  <div style="margin-top: 10px;">
+
+    <mat-form-field>
+      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+    </mat-form-field>
+
+    <mat-table #uTable style="margin: 20px;" class="mat-elevation-z8" [dataSource]="usersManagers">
+
+
+      <ng-container matColumnDef="select">
+
+          <mat-header-cell *matHeaderCellDef style="vertical-align: middle;">
+            <div style="margin-left: 5px;"> <p>Manager?</p></div>
+          </mat-header-cell>
+
+
+
+        <mat-cell style="vertical-align: middle;" *matCellDef="let row">
+
+          <mat-checkbox (click)="$event.stopPropagation()"
+                        (change)="$event ? selection.toggle(row) : null"
+                        [checked]="selection.isSelected(row)">
+          </mat-checkbox>
+
+        </mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="userid">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>User ID</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{user.userid}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{user.email}}</mat-cell>
+
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="columnsToShowUsers"></mat-header-row>
+
+      <mat-row *matRowDef="let row; columns: columnsToShowUsers"></mat-row>
+
+    </mat-table>
+
+  </div>
+
+      <button type="submit" class="btn btn-success" [disabled]="!campaignCreateForm.form.valid">Submit</button>
+
+
+
+  </form>
+</div>
+
+
+</body>
+</html>

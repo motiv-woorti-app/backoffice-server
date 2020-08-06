@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="dashWrapper">
+
+  <div style="margin-top: 10px;">
+
+    <mat-form-field>
+      <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+    </mat-form-field>
+
+    <mat-table #uTable style="margin: 20px;" class="mat-elevation-z8" [dataSource]="users">
+
+      <ng-container matColumnDef="userid">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>User ID</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{user.userid}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{user.email}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="rolesActions">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Promote/Demote Role</mat-header-cell>
+        <mat-cell *matCellDef="let user">
+
+          <button *ngIf="!user.roles.includes('Admin')" (click)="promote('Admin', user)" class="btn">Promote Admin</button>
+          <button *ngIf="user.roles.includes('Admin')" (click)="demote('Admin', user)" class="btn">Demote Admin</button>
+
+          <button *ngIf="!user.roles.includes('Manager')" (click)="promote('Manager', user)" class="btn">Promote Manager</button>
+          <button *ngIf="user.roles.includes('Manager')" (click)="demote('Manager', user)" class="btn">Demote Manager</button>
+
+          <button *ngIf="!user.roles.includes('CM')" (click)="promote('CM', user)" class="btn">Promote CM</button>
+          <button *ngIf="user.roles.includes('CM')" (click)="demote('CM', user)" class="btn">Demote CM</button>
+
+        </mat-cell>
+
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="columnsToShowUsers"></mat-header-row>
+
+      <mat-row *matRowDef="let row; columns: columnsToShowUsers"></mat-row>
+
+    </mat-table>
+
+  </div>
+</div>
+
+</body>
+</html>

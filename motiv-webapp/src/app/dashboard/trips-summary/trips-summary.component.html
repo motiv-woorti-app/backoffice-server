@@ -1,0 +1,266 @@
+<div class="dashWrapper">
+  <h2>
+    Collected trips
+  </h2>
+
+  <h6><strong>Time interwal by week:</strong></h6>
+  <mat-form-field>
+    <label for="timePickerWeek"> Select some day of the week that you want to analyze: </label>
+    <input matInput id="timePickerWeek" [matDatepicker]="pickerWeek" placeholder=""
+            (dateChange)="updateTripsBySelectedWeek($event.value)" disabled>
+    <mat-datepicker-toggle matSuffix [for]="pickerWeek"></mat-datepicker-toggle>
+    <mat-datepicker #pickerWeek disabled="false"></mat-datepicker>
+  </mat-form-field>
+
+  <div *ngIf="this.authService.checkAnyOfRoles(['Admin'])">
+  <h6><strong>Time interwal by month:</strong></h6>
+  <mat-form-field>
+    <label for="timePickerMonth"> Select some day of the month that you want to analyze: </label>
+    <input matInput id="timePickerMonth" [matDatepicker]="pickerMonth" placeholder=""
+            (dateChange)="updateTripsBySelectedMonth($event.value)" disabled>
+    <mat-datepicker-toggle matSuffix [for]="pickerMonth"></mat-datepicker-toggle>
+    <mat-datepicker #pickerMonth disabled="false"></mat-datepicker>
+  </mat-form-field>
+  </div>
+
+  <div *ngIf="this.lastDay">
+    <p>Trips <strong>from</strong> {{this.firstDay.format("MMMM Do YYYY")}} <strong>to</strong> {{this.lastDay.format("MMMM Do YYYY")}}:</p>
+  </div>
+
+  <div *ngIf="this.listOfTrips">
+      <p>Number of trips: {{this.listOfTrips.length}}</p>
+  </div>
+
+  <div *ngIf="this.authService.checkAnyOfRoles(['Admin']) && this.listOfTrips === undefined">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="this.authService.checkAnyOfRoles(['Admin']) && this.listOfTrips !== undefined" class="example-container mat-elevation-z8">
+
+    <mat-table #table [dataSource]="this.listOfTrips">
+
+      <ng-container matColumnDef="tripid">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Trip ID</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{trip.tripid}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="userEmail">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{trip.email}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="startDate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Date</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{this.getReadableTime(trip.startDate)}}</mat-cell>
+      </ng-container>
+      
+      <ng-container matColumnDef="validationDate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Validation date</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{this.getReadableTime(trip.validationDate)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="model">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Smartphone</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{trip.model}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="appVersion">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>App Version</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{trip.oS}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="totalNumLegs">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Number of Legs</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{trip.totalNumLegs}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="numCorrectLegs">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Number of correct Legs</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{trip.numCorrectLegs}} ({{this.getPercentageOfCorrectLegs(trip)}}%)</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="totalDistance">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Total distance (km)</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{this.getTotalDistance(trip)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="totalTrueDistance">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Correct distance (km)</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{this.getTrueDistance(trip)}} {{this.getPercentageOfTrueDistance(trip)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="numMergesSplitsDeletes">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Number of merges/splits/deletes</mat-header-cell>
+        <mat-cell *matCellDef="let trip">{{this.getNumOfMergesSplitsDeletes(trip)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actionsColumn">
+        <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+        <mat-cell *matCellDef="let trip">
+          <button style="margin-left: 10px" class="btn btn-primary" [routerLink]="['info', trip.tripid]">View trip</button>
+        </mat-cell>
+      </ng-container>
+
+
+      <mat-header-row *matHeaderRowDef="columnsToShowTrips"></mat-header-row>
+
+      <mat-row *matRowDef="let row; columns: columnsToShowTrips"></mat-row>
+
+    </mat-table>
+  </div>
+
+  <h4>
+    Overall statistics:
+  </h4>
+  
+  <div *ngIf="this.listOfTrips === undefined">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <div *ngIf="this.listOfTrips !== undefined">
+    <p>Total number of legs: {{this.totalNumOfLegs}}</p>
+
+    <p>Total number of merges: {{this.totalNumOfMerges}} </p>
+    <p>Total number of splits: {{this.totalNumOfSplits}}</p>
+    <p>Total number of deletes: {{this.totalNumOfDeletes}}</p>
+
+    <mat-table style="height: auto !important" #table [dataSource]='["Walking", "Bicycle", "Car", "Bus", "Train"]'>
+
+        <ng-container matColumnDef="mode">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Mode</mat-header-cell>
+          <mat-cell *matCellDef="let currMode"> <strong>{{currMode}}</strong> </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="numLegs">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Number of detected legs</mat-header-cell>
+          <mat-cell *matCellDef="let currMode">{{this.detectedNumberLegs[currMode]}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="rateA">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Sucess rate A</mat-header-cell>
+          <mat-cell *matCellDef="let currMode">{{this.getSucessRateForMode(true, currMode)}}%</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="rateB">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Sucess rate B</mat-header-cell>
+          <mat-cell *matCellDef="let currMode">{{this.getSucessRateForMode(false, currMode)}}%</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="rateADist">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Sucess rate A (dist)</mat-header-cell>
+          <mat-cell *matCellDef="let currMode">{{this.getSucessRateDistForMode(true, currMode)}}%</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="rateBDist">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Sucess rate B (dist)</mat-header-cell>
+          <mat-cell *matCellDef="let currMode">{{this.getSucessRateDistForMode(false, currMode)}}%</mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef='["mode", "numLegs", "rateA", "rateB", "rateADist", "rateBDist"]'></mat-header-row>
+        <mat-row *matRowDef='let row; columns: ["mode", "numLegs", "rateA", "rateB", "rateADist", "rateBDist"]'></mat-row>
+    </mat-table>
+  </div>
+
+  <h5>
+    Explanation of Sucess rate A and B for mode X:
+  </h5>
+  <p>Sucess rate A = # legs confirmed as X when the detected mode was X / Total # legs detected as X </p>
+  <p>Sucess rate B = # legs detected as X when the confirmed mode was X / Total # legs confirmed as X</p>
+
+  <p>Sucess rate A (dist) = distance confirmed as X when the detected mode was X / Distance detected as X </p>
+  <p>Sucess rate B (dist) = distance detected as X when the confirmed mode was X / Distance confirmed as X</p>
+
+  <p>* Detected mode - mode automatically detected by the app.</p>
+  <p>* Confirmed mode - mode indicated manually by the user.</p>
+
+  <div *ngIf="this.authService.checkAnyOfRoles(['Admin']) && this.listOfTrips !== undefined">
+    <h4>
+        Confusion matrix 1:
+    </h4>
+
+    <mat-table style="height: auto !important" #table [dataSource]='["Walking", "Bicycle", "Car", "Bus", "Train"]'>
+
+      <ng-container matColumnDef="mode">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Detected Mode</mat-header-cell>
+        <mat-cell *matCellDef="let currMode"> <strong>{{currMode}}</strong> </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="numLegs">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Number of detected legs</mat-header-cell>
+          <mat-cell *matCellDef="let currMode">{{this.detectedNumberLegs[currMode]}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="confirmedWalking">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Confirmed as Walking</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry(currMode, "Walking", false)}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="confirmedBicycle">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Confirmed as Bicycle</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry(currMode, "Bicycle", false)}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="confirmedCar">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Confirmed as Car</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry(currMode, "Car", false)}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="confirmedBus">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Confirmed as Bus</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry(currMode, "Bus", false)}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="confirmedTrain">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Confirmed as Train</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry(currMode, "Train", false)}} </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef='["mode", "numLegs", "confirmedWalking", "confirmedBicycle", "confirmedCar", "confirmedBus", "confirmedTrain"]'></mat-header-row>
+      <mat-row *matRowDef='let row; columns: ["mode", "numLegs", "confirmedWalking", "confirmedBicycle", "confirmedCar", "confirmedBus", "confirmedTrain"]'></mat-row>
+    </mat-table>
+
+    <h4>
+        Confusion matrix 2:
+    </h4>
+
+    <mat-table style="height: auto !important" #table [dataSource]='["Walking", "Bicycle", "Car", "Bus", "Train"]'>
+
+      <ng-container matColumnDef="mode">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Corrected Mode</mat-header-cell>
+        <mat-cell *matCellDef="let currMode"> <strong>{{currMode}}</strong> </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="numLegs">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Number of corrected legs</mat-header-cell>
+          <mat-cell *matCellDef="let currMode">{{this.correctedNumberLegs[currMode]}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="detectedWalking">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Detected as Walking</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry("Walking", currMode, true)}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="detectedBicycle">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Detected as Bicycle</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry("Bicycle", currMode, true)}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="detectedCar">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Detected as Car</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry("Car", currMode, true)}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="detectedBus">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Detected as Bus</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry("Bus", currMode, true)}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="detectedTrain">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Detected as Train</mat-header-cell>
+        <mat-cell *matCellDef="let currMode">{{this.getConfusionMatrixEntry("Train", currMode, true)}} </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef='["mode", "numLegs", "detectedWalking", "detectedBicycle", "detectedCar", "detectedBus", "detectedTrain"]'></mat-header-row>
+      <mat-row *matRowDef='let row; columns: ["mode", "numLegs", "detectedWalking", "detectedBicycle", "detectedCar", "detectedBus", "detectedTrain"]'></mat-row>
+    </mat-table>
+</div>

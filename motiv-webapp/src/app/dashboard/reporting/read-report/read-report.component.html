@@ -1,0 +1,63 @@
+<h2>
+  Report:
+</h2>
+
+<p><strong>User ID: </strong> {{this.currentReport.uid}}</p>
+<p><strong>Email: </strong> {{this.emailOfCurrentReport}}</p>
+<p><strong>Report ID: </strong> {{this.currentReport._id}}</p>
+<p><strong>OS: </strong> {{this.currentReport.reportingOS}}</p>
+<p><strong>Reporting ID: </strong> {{this.currentReport.reportingID}}</p>
+<p><strong>Report send from: </strong> {{this.originOfCurrentReport()}}</p>
+<p><strong>Trigger Date: </strong> {{this.getReadableTime(this.currentReport.triggerDate)}}</p>
+<p><strong>Answer Date: </strong> {{this.getReadableTime(this.currentReport.answerDate)}}</p>
+
+<p><strong>Report analysed at: </strong> {{this.getReadableTime(this.currentReport.analysedDate)}}</p>
+<div *ngIf="this.reportWasAddressed()">
+  <p><strong>Report addressed at: </strong> {{this.getReadableTime(this.currentReport.addressedDate)}}</p>
+</div>
+
+<div *ngIf="this.questionsOfReport">
+    <h4>
+        Survey:
+    </h4>
+  <ul class="list-group">
+      <li class="list-group-item" *ngFor="let answer of this.currentReport.answers; let idx = index;">
+        <p><strong>{{this.getQuestionTextById(answer.questionID)}}: </strong>  {{this.getAnswerText(answer)}}</p>
+      </li>
+    </ul>
+</div>
+
+<div *ngIf="this.imageWasReceived">
+  <p><strong>Attached image:</strong></p>
+<img style="max-width:700px;max-height:700px;" [src]="this.imageToShow" alt="Attachment" >
+</div>
+
+
+<div class="form-group">
+  <h4>
+      Relative priority:
+  </h4>
+  <div>
+    <mat-form-field>
+      <mat-select placeholder="Current priority" [(ngModel)]="this.selectedErrorPriority" [disabled]="this.reportWasAddressed()" (selectionChange)="this.setNewPriority()">
+          <mat-option *ngFor="let priority of possibleErrorPriorities" [value]="priority">
+              {{ priority }}
+          </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+
+
+<div class="form-group">
+  <h4>
+      Commentaries:
+  </h4>
+  <textarea class="form-control" id="commentsTextArea" rows="1" [(ngModel)]="reportComments" name="descr"></textarea>
+  <button class="btn" type="button" (click)="saveComment()">Save</button>
+</div>
+
+<div *ngIf="!this.reportWasAddressed()">
+  <button class="btn btn-primary" type="button" (click)="markAddressed()">Mark issue as Addressed</button>
+</div>
+

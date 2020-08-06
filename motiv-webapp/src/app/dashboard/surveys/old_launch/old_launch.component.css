@@ -1,0 +1,11 @@
+@import "~ng-pick-datetime/assets/style/picker.min.css";
+
+
+table {
+  width: 100%;
+}
+
+/*.mat-form-field {*/
+  /*font-size: 14px;*/
+  /*width: 100%;*/
+/*}*/

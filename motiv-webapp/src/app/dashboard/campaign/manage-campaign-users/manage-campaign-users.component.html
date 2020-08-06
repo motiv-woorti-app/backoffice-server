@@ -1,0 +1,200 @@
+<h4>Global statistics of campaign <strong>{{this.currentCampaign.name}}</strong>:</h4>
+
+<div *ngIf="this.overallStatistics === undefined || this.usersInCampaign === undefined">
+  <mat-spinner></mat-spinner>
+</div>
+
+<div *ngIf="this.overallStatistics !== undefined">
+  <p>Total number of active users: {{this.overallStatistics["numUsers"]}} (user with at least one trip submitted)</p>
+  <p>Total number of users with 14 days of trips: {{this.overallStatistics["numUsersWithFourteenDaysWithTrips"]}}</p>
+  <p>Total number of submitted trips: {{this.overallStatistics["numTrips"]}}</p>
+  <p>Total number of legs: {{this.overallStatistics["numLegs"]}}</p>
+  <p>Total gender distribution: {{this.overallStatistics["gender"]["Male"]}} <strong>Male</strong>; {{this.overallStatistics["gender"]["Female"]}} <strong>Female</strong>; {{this.overallStatistics["gender"]["Other"]}} <strong>Other</strong>; {{this.overallStatistics["gender"]["undefined"]}} <strong>unknown</strong>;</p>
+  <p>Total age distribution: </p>
+  <ul>
+    <li *ngFor="let ageGroup of this.overallStatistics['age']; let idx = index;">
+      <p><strong>{{ageGroup.age}}</strong> : {{ageGroup.count}} ({{ this.getAgeGroupStatistics(ageGroup, this.overallStatistics) }})</p>
+    </li>
+  </ul>
+
+  <p>Total education level distribution: </p>
+  <ul>
+    <li *ngFor="let degreeGroup of this.overallStatistics['degree']; let idx = index;">
+      <p><strong>{{degreeGroup.name}}</strong> : {{degreeGroup.count}} ({{ this.getDegreeGroupStatistics(degreeGroup, this.overallStatistics) }})</p>
+    </li>
+  </ul>
+
+  <p>Total Distance / Duration by transport mode: </p>
+  <ul>
+    <li *ngFor="let distDurGroup of this.overallStatistics['distancesAndDurations']; let idx = index;">
+      <p><strong>{{this.utilsService.getTransportModeName(distDurGroup.mode)}}</strong> : {{this.getDistanceInKm(distDurGroup.dist)}} / {{this.getDuration(distDurGroup.dur)}} </p>
+    </li>
+  </ul>
+
+  <button class="btn" type="button" (click)="exportGlobalStatistics()">Export global statistics</button>
+
+</div>
+
+
+<h4>Statistics of campaign <strong>{{this.currentCampaign.name}}</strong> by specific time interval:</h4>
+
+<h6><strong>By specific week:</strong></h6>
+<mat-form-field>
+  <label for="timePickerWeek"> Select some day of the week that you want to analyze: </label>
+  <input matInput id="timePickerWeek" [matDatepicker]="pickerWeek" placeholder=""
+          (dateChange)="updateStatisticsBySpecificWeek($event.value)" disabled>
+  <mat-datepicker-toggle matSuffix [for]="pickerWeek"></mat-datepicker-toggle>
+  <mat-datepicker #pickerWeek disabled="false"></mat-datepicker>
+</mat-form-field>
+
+<h6><strong>By specific month:</strong></h6>
+  <mat-form-field>
+    <label for="timePickerMonth"> Select some day of the month that you want to analyze: </label>
+    <input matInput id="timePickerMonth" [matDatepicker]="pickerMonth" placeholder=""
+            (dateChange)="updateStatisticsBySpecificMonth($event.value)" disabled>
+    <mat-datepicker-toggle matSuffix [for]="pickerMonth"></mat-datepicker-toggle>
+    <mat-datepicker #pickerMonth disabled="false"></mat-datepicker>
+  </mat-form-field>
+
+<div *ngIf="this.firstDaySpecificFilter !== undefined && this.specificStatistics !== undefined">
+  <p>Active users and reported trips <strong>from</strong> {{this.firstDaySpecificFilter.format("MMMM Do YYYY")}} <strong>to</strong> {{this.lastDaySpecificFilter.format("MMMM Do YYYY")}}:</p>
+  <p>{{this.specificStatistics["numUsers"]}} active users (user with at least one trip submitted).</p>
+  <p>{{this.specificStatistics["numTrips"]}} submitted trips (without duplicates).</p>
+  <p>{{this.specificStatistics["numLegs"]}} legs.</p>
+  <p>Gender distribution: {{this.specificStatistics["gender"]["Male"]}} <strong>Male</strong>; {{this.specificStatistics["gender"]["Female"]}} <strong>Female</strong>; {{this.specificStatistics["gender"]["Other"]}} <strong>Other</strong>; {{this.specificStatistics["gender"]["undefined"]}} <strong>unknown</strong>;</p>
+  <p>Age distribution: </p>
+  <ul>
+    <li *ngFor="let ageGroup of this.specificStatistics['age']; let idx = index;">
+      <p><strong>{{ageGroup.age}}</strong> : {{ageGroup.count}} ({{ this.getAgeGroupStatistics(ageGroup, this.specificStatistics) }})</p>
+    </li>
+  </ul>
+
+  <p>Education level distribution: </p>
+  <ul>
+    <li *ngFor="let degreeGroup of this.specificStatistics['degree']; let idx = index;">
+      <p><strong>{{degreeGroup.name}}</strong> : {{degreeGroup.count}} ({{ this.getDegreeGroupStatistics(degreeGroup, this.specificStatistics) }})</p>
+    </li>
+  </ul>
+
+  <p>Distance / Duration by transport mode: </p>
+  <ul>
+    <li *ngFor="let distDurGroup of this.specificStatistics['distancesAndDurations']; let idx = index;">
+      <p><strong>{{this.utilsService.getTransportModeName(distDurGroup.mode)}}</strong> : {{this.getDistanceInKm(distDurGroup.dist)}} / {{this.getDuration(distDurGroup.dur)}} </p>
+    </li>
+  </ul>
+</div>
+
+
+<h4>Add new users to campaign <strong>{{this.currentCampaign.name}}</strong>:</h4>
+  <div class="form-group">
+    <mat-form-field >
+        <input matInput placeholder="Email" [formControl]="emailOfUserToAdd">
+        <mat-error *ngIf="emailError !== undefined">
+          {{emailError}}
+        </mat-error>
+        <mat-error *ngIf="this.emailOfUserToAdd.hasError('email') || this.emailOfUserToAdd.hasError('required')">
+          Please enter a valid email address
+        </mat-error>
+        
+
+    </mat-form-field>
+    <button class="btn" type="button" (click)="addNewUserToCampaign()">Add single user</button>
+  </div>
+
+  <div >
+    <mat-form-field class="example-full-width" style="display: flex; flex-direction: column;">
+        <textarea matInput [formControl]="this.listOfEmails" placeholder="Emails separated by comma:"></textarea>
+        <mat-error *ngIf="emailManyError !== undefined">
+          {{emailManyError}}
+        </mat-error>    
+    </mat-form-field>
+    <button class="btn" type="button" (click)="addMultipleUsersToCampaign()">Add multiple users</button>
+    <div *ngIf="this.emailManyResultStatus !== undefined">Status: {{this.emailManyResultStatus}}</div>  
+  </div>
+
+  <div class="form-group" *ngIf="this.authService.checkAnyOfRoles(['Admin', 'Manager', 'CM'])">
+      <h4>Exclude user from statistics (and from recipients of surveys) of campaign <strong>{{this.currentCampaign.name}}</strong>:</h4>
+    <mat-form-field >
+        <input matInput placeholder="Email" [formControl]="emailOfUserToExclude">
+        <mat-error *ngIf="emailExcludeUserError !== undefined">
+          {{emailExcludeUserError}}
+        </mat-error>
+        <mat-error *ngIf="this.emailOfUserToExclude.hasError('email') || this.emailOfUserToExclude.hasError('required')">
+          Please enter a valid email address
+        </mat-error>
+    </mat-form-field>
+    <button class="btn" type="button" (click)="excludeUserFromCampaign()">Exclude user</button>
+  </div>
+
+
+<h4 style="padding-top: 35px;">All registered users in campaign <strong>{{this.currentCampaign.name}}</strong>:</h4>
+
+<div *ngIf="this.overallStatistics === undefined || this.usersInCampaign === undefined">
+  <mat-spinner></mat-spinner>
+</div>
+
+<div *ngIf="this.usersInCampaign && this.overallStatistics">
+  <p>Number of users: {{this.usersInCampaign.length}}</p>
+  <div>
+    <mat-table style="margin: 20px;" class="mat-elevation-z8" [dataSource]="this.usersInCampaign">
+
+      <ng-container matColumnDef="email">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{user.email}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="registerDate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Register Date</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{this.getUserRegisterDate(user.registerTimestamp)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{this.getNameOfUser(user)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="points">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Points</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{this.getPointsOfUser(user)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="numAnswers">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Number of answers to surveys</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{this.getNumberOfAnsweredSurveys(user)}}</mat-cell>
+      </ng-container>
+      
+      <ng-container matColumnDef="numOfTrips">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Number of trips</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{this.getNumOfTripsOfUser(user)}}</mat-cell>
+      </ng-container>
+      
+      <ng-container matColumnDef="daysOfTrips">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Days with trips</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{this.getDifferentDaysWithTripsOfUser(user)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="lastSubmittedTrip">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Date of last trip</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{this.getDateOfLastTripOfUser(user)}}</mat-cell>
+      </ng-container>
+
+      
+      <mat-header-row *matHeaderRowDef="columnsOfUserToShow"></mat-header-row>
+
+      <mat-row *matRowDef="let row; columns: columnsOfUserToShow"></mat-row>
+
+    </mat-table>
+  </div>
+  <button class="btn" type="button" (click)="exportUsersInCampaignStatistics()">Export statistics about users</button>
+  <button (click)="getUsersEmails()" type="button" class="btn btn-primary">Get users email list</button>
+  <div *ngIf="usersEmailsBoolean" style="margin-top: 10px;">
+    <div class="form-group">
+      <label for="exampleFormControlTextarea1">Users email list:</label>
+      <textarea class="form-control" id="exampleFormControlTextarea1" rows="1">{{usersEmails}}</textarea>
+    </div>
+  </div>
+</div>
+<div *ngIf="this.authService.checkAnyOfRoles(['Admin'])">
+  <button (click)="exportModeStatistics(true)" type="submit" class="btn btn-primary">Export Mode Statistics</button>
+</div>
+

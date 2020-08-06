@@ -1,0 +1,39 @@
+<div>
+    <mat-form-field>
+      <mat-select placeholder="Show question in" [(ngModel)]="selectedLanguageToShow">
+        <mat-option *ngFor="let language of languagesAvailableToShow" [value]="language">
+          {{ language }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-select placeholder="Add/Edit translation in" [(ngModel)]="selectedLanguageTranslation">
+        <mat-option *ngFor="let language of languagesAllTranslations" [value]="language">
+          {{ language }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+</div>
+
+<div>
+  <p><strong>Question: </strong> {{this.currQuestion.question[this.isoOfCurrLang()]}}</p>
+  
+  <input type='text' placeholder="Translation of question" [(ngModel)]="translatedQuestion" [value]="translatedQuestion"/>
+</div>
+
+<div *ngIf="this.questionHaveAnswers">
+    <ul class="list-group">
+        <li class="list-group-item" *ngFor="let answer of this.currQuestion.answers[this.isoOfCurrLang()]; let idx = index;">
+          <p><strong>Answer {{idx + 1}}: </strong>  {{ answer }}</p>
+          <p>
+            <strong>Translation {{idx + 1}}: </strong>
+            <input [(ngModel)]="this.translatedAnswers[idx]" placeholder="answer">
+          </p>
+        </li>
+      </ul>
+</div>
+
+<button title="Add new translation" class="btn btn-primary btn-block" (click)="addTranslation()">
+  Add translation
+</button>

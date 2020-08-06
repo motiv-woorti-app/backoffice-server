@@ -1,0 +1,56 @@
+<div *ngIf="this.currentSurvey">
+    <h2>
+        Details of survey <strong>{{this.currentSurvey.surveyName}}</strong>:
+    </h2>
+
+    <p><strong>Survey name: </strong> {{this.currentSurvey.surveyName}}</p>
+    <p><strong>Survey id: </strong> {{this.currentSurvey.surveyID}}</p>
+    <p><strong>Survey description: </strong> {{this.currentSurvey.description}}</p>
+    <p><strong>Survey estimated duration: </strong> {{this.currentSurvey.estimatedDuration}}</p>
+    <p><strong>Survey type: </strong> {{this.currentSurvey.surveyType}}</p>
+    <p><strong>Survey default language: </strong> {{this.currentSurvey.defaultLanguage}}</p>
+    <p><strong>Is urgent?: </strong> {{this.currentSurvey.urgent}}</p>
+    <p><strong>Points for completing: </strong> {{this.currentSurvey.surveyPoints}}</p>
+    <p><strong>Start date: </strong> {{this.getReadableTime(this.currentSurvey.startDate)}}</p>
+    <p><strong>Stop date: </strong> {{getReadableTime(this.currentSurvey.stopDate)}}</p>
+    <p><strong>Trigger type: </strong> {{this.getTriggerInfo()}}</p>
+
+
+    <h4>
+        Questions:
+    </h4>
+    <mat-table style="margin: 20px;" [dataSource]="this.currentSurvey.questions">
+
+        <ng-container matColumnDef="id">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>QuestionID</mat-header-cell>
+          <mat-cell *matCellDef="let question">{{question.questionId}}</mat-cell>
+        </ng-container>
+  
+        <ng-container matColumnDef="question">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Question</mat-header-cell>
+          <mat-cell *matCellDef="let question">{{question.question[this.currentSurvey.defaultLanguage]}}</mat-cell>  
+        </ng-container>
+  
+        <ng-container matColumnDef="type">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Type</mat-header-cell>
+          <mat-cell *matCellDef="let question">{{this.surveyConnectionService.getQuestionTypeName(question.questionType)}}</mat-cell>
+        </ng-container>
+    
+        <mat-header-row *matHeaderRowDef="columnsOfQuestions"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: columnsOfQuestions"></mat-row>
+  
+      </mat-table>
+
+
+    <h4>
+        Launch information:
+    </h4>
+    <p><strong>Launch date: </strong> {{this.getReadableTime(this.currentSurvey.launch.launchDate)}}</p>
+    <p><strong>Number of received answers: </strong> {{this.numberOfAnswers}}</p>
+    <p><strong>Target campaigns: </strong> {{this.getNamesOfTargetCampaigns()}}</p>
+    <p><strong>Target users: </strong> </p>
+
+    <mat-list>
+      <mat-list-item *ngFor="let user of usersOfSurvey"> {{user.email}}</mat-list-item>
+    </mat-list>
+</div>

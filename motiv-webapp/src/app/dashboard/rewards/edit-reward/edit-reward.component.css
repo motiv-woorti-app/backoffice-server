@@ -1,0 +1,8 @@
+.mat-form-field{
+    display: block
+}
+
+.mat-divider{
+    border-top-width: 0.05cm;
+    border-block-color: #0066ff;
+  }

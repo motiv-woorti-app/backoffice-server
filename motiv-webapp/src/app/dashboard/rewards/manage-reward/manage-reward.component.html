@@ -1,0 +1,51 @@
+<div *ngIf="this.rewardToEdit === null">
+  <p>
+    Reward does not exists
+  </p>
+</div>
+
+<div *ngIf="this.rewardToEdit && this.rewardStatus && this.usersOfReward">
+  <h4> Reward Management </h4>
+
+  <p><strong>Reward Id: </strong> {{this.rewardToEdit.rewardId}}</p>
+  <p><strong>Reward name: </strong> {{this.rewardToEdit.rewardName}}</p>
+  <p><strong>Target campaign: </strong> {{this.targetCampaignName}}</p>
+  <p><strong>Target: </strong> {{this.getTargetInfo()}}</p>
+  <p [hidden]="this.hasDate"><strong>Start date: </strong> {{this.getReadableTime(this.rewardToEdit.startDate)}}</p>
+  <p><strong>End date: </strong> {{this.getReadableTime(this.rewardToEdit.endDate)}}</p>
+
+  <div>
+    <h5> Progress of users: </h5>
+    <mat-table style="margin: 20px;" class="mat-elevation-z8" [dataSource]="this.usersOfReward">
+
+      <ng-container matColumnDef="email">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{user.email}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{this.getNameOfUser(user)}}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="currValue">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Current number of {{this.getTargetTypeName()}}</mat-header-cell>
+        <mat-cell *matCellDef="let user">{{this.getCurrentValueOfUser(user) }}</mat-cell>
+      </ng-container>
+
+      
+      <mat-header-row *matHeaderRowDef="columnsOfUserToShow"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: columnsOfUserToShow"></mat-row>
+
+    </mat-table>
+  </div>
+  <button class="btn" type="button" (click)="exportUsersProgress()">Export table with progress of users</button>
+  <button (click)="getUsersEmails()" type="button" class="btn btn-primary">Get users email list</button>
+  <div *ngIf="usersEmailsBoolean" style="margin-top: 10px;">
+    <div class="form-group">
+      <label for="exampleFormControlTextarea1">Users email list:</label>
+      <textarea class="form-control" id="exampleFormControlTextarea1" rows="1">{{usersEmails}}</textarea>
+    </div>
+  </div>
+</div>
+

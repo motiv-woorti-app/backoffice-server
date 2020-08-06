@@ -1,0 +1,74 @@
+.example-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 1000px;
+    min-width: 500px;
+  }
+  .container{
+      background-color: white;
+      border: 1.5px solid black;
+      border-radius: 10px;
+      text-align: center;
+  }
+  .mat-table {
+      position:relative;
+      overflow: auto;
+      max-height: 750px;
+      width:100%;
+      background-color: rgba(255, 255, 255, 0.959);
+      height : 100vh;
+  }
+  .container{
+      background-color: white;
+      border: 1.5px solid black;
+      border-radius: 10px;
+      text-align: center;
+  }
+  .mat-form-field-underline{
+      background-color:transparent;
+  }
+  .mat-form-field-flex{
+      font-size: 14px;
+      line-height: 1em;
+      color: #555;
+      background-image: none;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 8px;
+      padding: 2px;
+  }
+  .mat-form-field-wrapper{
+      padding-bottom: 1.25em;
+      padding-top: 1.25em;
+  }
+  .mat-form-field-infix{
+      border:0px;
+  }
+  .mat-paginator{
+      background-color: white;
+  }
+  .mat-row, .mat-header-row {
+    min-width: 500px; 
+    width:100%;
+  }
+
+  mat-header-cell, mat-cell {
+    /* 
+    flex-shrink: 0;
+    flex-basis: 35%;
+    */
+    flex: 0 0 15%;
+}
+
+.mat-header-row {
+    position: sticky;
+    top: 0;
+    background-color: inherit;
+}
+
+
+
+.highlight{
+    background: #FFFFA2; /* green */
+  }
+  

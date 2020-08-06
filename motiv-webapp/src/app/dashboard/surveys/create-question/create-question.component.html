@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DASDAS</title>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="dashWrapper">
+
+<div>
+  <mat-form-field>
+    <mat-select placeholder="Language" [(ngModel)]="currLanguage">
+      <mat-option *ngFor="let language of languagesArray" [value]="language">
+        {{ language }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+
+  <mat-form-field>
+    <mat-select placeholder="Question type" [(ngModel)]="questionTypeSelected">
+      <mat-option *ngFor="let type of questionTypeArray" [value]="type">
+        {{ type.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+<div>
+  <input type='text' placeholder="Type the question here" [(ngModel)]="questionText" [value]="questionText"/>
+</div>
+
+  <div class="multipleAnswers" *ngIf="questionTypeSelected.allowsMC">
+    <h3>
+      Answers
+    </h3>
+
+    <input type='text' placeholder="Add answer here"  #textbox/>
+    <button (click)="addMultipleChoiceAnswer(textbox.value); textbox.value=''">Add answer</button>
+
+    <ul class="list-group">
+      <li class="list-group-item" *ngFor="let answer of multipleChoiceAnswers">
+
+          <button class="glyphicon glyphicon-remove" title="delete question"
+                   (click)="deleteMultipleChoiceAnswer(answer)">
+            x
+          </button>
+          {{ answer }}
+
+      </li>
+    </ul>
+
+  </div>
+
+  <div class="sliderRangeAnswers" *ngIf="questionTypeSelected.type === 'scale'">
+
+    <h3>
+      Minimum and maximum slider range
+    </h3>
+
+    <div>
+      <input type='number' placeholder="Minimum Range" [(ngModel)]="minRange" [value]="minRange" />
+    </div>
+    <div>
+      <input type='number' placeholder="Maximum Range" [(ngModel)]="maxRange" [value]="maxRange" />
+    </div>
+
+  </div>
+
+
+  <div style="margin: 20px">
+    <button (click)="saveQuestion(false)" >Create new question</button>
+  </div>
+  <div style="margin: 20px">
+    <button (click)="saveQuestion(true)" >Create new question and add translations</button>
+  </div>
+
+</div>
+
+</body>
+</html>

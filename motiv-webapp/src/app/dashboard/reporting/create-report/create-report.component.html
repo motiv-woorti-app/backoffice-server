@@ -1,0 +1,45 @@
+<h4>
+    Report an issue:
+</h4>
+
+<div *ngIf="this.questions">
+  <ul class="list-group">
+    <li class="list-group-item" *ngFor="let question of this.questions; let idx = index;">
+        <div *ngIf="this.isMultipleChoiseQuestion(question)">
+
+            <p>{{question.question[this.lang]}}</p>
+            <div style="display: flex; flex-direction: column;">
+                <mat-form-field>
+                    <mat-select placeholder="Error type" [(ngModel)]="question['givenAnswer']" required>
+                      <mat-option *ngFor="let answer of question.answers[this.lang]; let idx = index;" [value]="answer">
+                        {{answer}}
+                      </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            
+        </div>
+
+        <div *ngIf="!this.isMultipleChoiseQuestion(question)">
+            <p>{{question.question[this.lang]}}</p>
+            <div style="display: flex; flex-direction: column;">
+                <mat-form-field class="example-full-width">
+                    <textarea matInput placeholder="Response" [(ngModel)]="question['givenAnswer']" rows="1"></textarea>
+                </mat-form-field>
+            </div>
+        </div>
+      
+
+    </li>
+  </ul>
+  
+  <div>
+    <p>Attachment:</p>
+    <input type="file" (change)="createFormData($event)" placeholder="Upload attachment" accept=".jpg,.png">
+  </div>
+
+  <div *ngIf="this.showErrorMaximumSize">
+    <p style="color: #800000;"><strong>Error!</strong> File too large, the maximum size is 600 kb</p>
+  </div>
+  <button class="btn btn-primary" type="button" (click)="submitReport()">Report</button>
+</div>

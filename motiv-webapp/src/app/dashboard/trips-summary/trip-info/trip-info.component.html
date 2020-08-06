@@ -1,0 +1,47 @@
+<h2>
+    Details of trip {{this.currentTripId}}:
+  </h2>
+
+  <div *ngIf="this.currentTrip">
+      <p><strong>Trip ID: </strong> {{this.currentTrip.tripid}}</p>
+      <p><strong>User ID: </strong> {{this.currentTrip.userid}}</p>
+      <p><strong>Email: </strong> {{this.currentTrip.email}}</p>
+      <p><strong>Start Date: </strong> {{this.getReadableTime(this.currentTrip.startDate)}}</p>
+      <p><strong>End Date: </strong> {{this.getReadableTime(this.currentTrip.endDate)}}</p>
+      <p><strong>Validation Date: </strong> {{this.getValidationDate(this.currentTrip.validationDate)}}</p>
+      <p><strong>Duration: </strong> {{this.getDuration(this.currentTrip.startDate, this.currentTrip.endDate)}}</p>
+      <p><strong>Number of Waiting Events: </strong> {{this.currentTrip.totalNumWEs}}</p>
+      <p><strong>Number of Legs: </strong> {{this.currentTrip.totalNumLegs}}</p>
+      <p><strong>Number of correctly identified Legs: </strong> {{this.currentTrip.numCorrectLegs}} ({{this.getPercentageOfCorrectLegs()}}%)</p>
+      <p><strong>Number of Merges: </strong> {{this.getMergesSplitsDeletes(this.currentTrip.numMerges)}}</p>
+      <p><strong>Number of Splits: </strong> {{this.getMergesSplitsDeletes(this.currentTrip.numSplits)}}</p>
+      <p><strong>Number of Deletes: </strong> {{this.getMergesSplitsDeletes(this.currentTrip.numDeletes)}}</p>
+      <p><strong>Total distance: </strong> {{this.getDistanceInKm(this.currentTrip.totalDistance)}}</p>
+      <p><strong>Distance correctly identified: </strong> {{this.getTrueDistance(this.currentTrip.totalTrueDistance, this.currentTrip.totalDistance)}}</p>
+      <p><strong>Smartphone model: </strong> {{this.currentTrip.model}}</p>
+      <p><strong>Operating system (OS): </strong> {{this.currentTrip.os}}</p>
+      <p><strong>OS version: </strong> {{this.currentTrip.osVersion}}</p>
+
+      <h4>
+          Legs and Waiting Events:
+      </h4>
+      <ul class="list-group">
+          <li class="list-group-item" *ngFor="let leg of this.currentTrip.legs; let idx = index;">
+              <p><strong>Type: </strong>  {{leg.type}}</p>
+              <p><strong>Start Date: </strong> {{this.getReadableTime(leg.startDate)}}</p>
+              <p><strong>End Date: </strong> {{this.getReadableTime(leg.endDate)}}</p>
+              <p><strong>Duration: </strong> {{this.getDuration(leg.startDate, leg.endDate)}}</p>
+              <p><strong>Number of locations: </strong> {{leg.numLocs}}</p>
+              <div *ngIf="leg.type==='Leg'">
+                  <p><strong>Number of accelerations: </strong> {{leg.numAccels}}</p>
+                  <p><strong>Average speed: </strong> {{leg.avSpeed.toFixed(2)}} km/h</p>
+                  <p><strong>Distance: </strong> {{this.getDistanceInKm(leg.distance)}}</p>
+                  <p><strong>Distance correctly identified: </strong> {{this.getTrueDistance(leg.trueDistance, leg.distance)}}</p>
+                  <p><strong>Leg was used in merge operation: </strong> {{this.getOptionalBoolean(leg.wasMerged)}}</p>
+                  <p><strong>Leg was used in split operation: </strong> {{this.getOptionalBoolean(leg.wasSplit)}}</p>
+                  <p><strong>Mode automatically detected: </strong> {{this.transportModeToStr(leg.detectedMode)}}</p>
+                  <p><strong>Mode indicated by the user: </strong> {{this.transportModeToStr(leg.correctedMode)}}</p>
+              </div>
+          </li>
+        </ul>
+  </div>

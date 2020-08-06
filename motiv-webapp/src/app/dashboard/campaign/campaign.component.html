@@ -1,0 +1,93 @@
+
+
+<div class="dashWrapper">
+  <h2>
+    Campaigns
+  </h2>
+
+  <div *ngIf="this.authService.checkAnyOfRoles(['Admin', 'Manager'])" >
+    <button (click)="createCampaign()" routerLink="createCampaign" class="btn btn-primary btn-block">Create new campaign</button>
+  </div>
+
+  <div>
+
+    <mat-table style="margin: 20px;" class="mat-elevation-z8" [dataSource]="getManagedCampaigns()">
+
+      <ng-container matColumnDef="campaignId">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Campaign ID</mat-header-cell>
+        <mat-cell *matCellDef="let campaign">{{campaign.campaignId}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="campaignName">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+        <mat-cell *matCellDef="let campaign">{{campaign.name}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="campaignCountryCity">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Country City</mat-header-cell>
+        <mat-cell *matCellDef="let campaign">{{this.getCountryNameByIso(campaign.country) + " " + campaign.city}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="publicPrivate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Public/Private</mat-header-cell>
+        <mat-cell *matCellDef="let campaign">{{this.isPublicPrivate(campaign)}}</mat-cell>
+
+      </ng-container>
+
+      <ng-container matColumnDef="actionsColumn">
+
+        <mat-header-cell *matHeaderCellDef>Edit or Activate/Deactivate</mat-header-cell>
+        <mat-cell *matCellDef="let campaign">
+          <button class="btn" (click)="editCampaign(campaign)">Edit</button>
+
+          <button class="btn" [routerLink]="['manageusers', campaign.campaignId]">Management</button>
+
+          <button *ngIf="campaign.active" class="btn" (click)="deactivateCampaign(campaign)">Deactivate</button>
+          <button *ngIf="!campaign.active" class="btn" (click)="activateCampaign(campaign)">Activate</button>
+
+
+        </mat-cell>
+
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="columnsToShowCampaign"></mat-header-row>
+
+      <mat-row *matRowDef="let row; columns: columnsToShowCampaign"></mat-row>
+
+    </mat-table>
+  </div>
+
+  <div *ngIf="this.authService.checkAnyOfRoles(['Admin', 'Manager', 'CM'])">
+    <h2>
+      Export the Campaign data:
+    </h2>
+
+    <div>
+        <mat-form-field>
+            <mat-select placeholder="Campaign:" [(ngModel)]="this.selectedCampaignToExport">
+                <mat-option *ngFor="let campaign of getManagedCampaigns()" [value]="campaign">
+                    {{ campaign.name }}
+                </mat-option>
+            </mat-select>
+          </mat-form-field>
+      
+          <mat-form-field>
+            <mat-select placeholder="Format:" [(ngModel)]="this.selectedFormat">
+                <mat-option [value]="'JSON'">JSON</mat-option>
+                <mat-option [value]="'CSV'">CSV</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button class="btn" (click)="exportTripDataOfCampaign()">Export trips data</button>
+          <button class="btn" (click)="exportUsersDataOfCampaign()">Export users data</button>
+          <button class="btn" (click)="exportTripsAndUsersDataOfCampaign()">Export trips-users relation data</button>
+          <div *ngIf="this.authService.checkAnyOfRoles(['Admin'])">
+            <button class="btn" (click)="exportLegStartEnd()">Export legs start end</button>
+          </div>
+    </div>
+  </div>
+
+</div>

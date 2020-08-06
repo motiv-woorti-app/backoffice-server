@@ -1,0 +1,53 @@
+<h2>
+  Rewards
+</h2>
+
+<div>
+  <button routerLink="createReward" class="btn btn-primary btn-block">Create new reward</button>
+</div>
+
+
+
+<div>
+  <mat-table style="margin: 20px;" class="mat-elevation-z8" [dataSource]="this.listOfRewards">
+
+    <ng-container matColumnDef="rewardId">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Reward ID</mat-header-cell>
+      <mat-cell *matCellDef="let reward">{{reward.rewardId}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="rewardName">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
+      <mat-cell *matCellDef="let reward">{{reward.rewardName}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="targerCampaign">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Target campaign</mat-header-cell>
+      <mat-cell *matCellDef="let reward">{{this.getCampaignNameById(reward.targetCampaignId)}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="rewardStatus">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
+      <mat-cell *matCellDef="let reward">{{this.getRewardStatus(reward)}}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="rewardActions">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>Available actions</mat-header-cell>
+      <mat-cell *matCellDef="let reward">
+        <button mat-button [matMenuTriggerFor]="menu">Actions</button>
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item type="button" class="btn" (click)="navigateToEditReward(reward)">Edit</button>
+            <button mat-menu-item type="button" class="btn" (click)="navigateToRewardManagement(reward)">Management</button>
+            <button mat-menu-item *ngIf="this.canBeDeactivated(reward)" type="button" class="btn" (click)="deactivateReward(reward)">Deactivate</button>
+        </mat-menu>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="this.columnsToShowReward"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: this.columnsToShowReward"></mat-row>
+
+  </mat-table>
+</div>
+
+
+

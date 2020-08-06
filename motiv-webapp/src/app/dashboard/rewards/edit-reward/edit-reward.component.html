@@ -1,0 +1,120 @@
+<div *ngIf="this.rewardToEdit === null">
+  <p>
+    Reward does not exists
+  </p>
+</div>
+
+<form *ngIf="this.rewardToEdit && this.rewardForm" [formGroup]="this.rewardForm" (ngSubmit)="submitReward()">
+
+  <h4> Edit Reward: </h4>
+
+  <div class="form-group">
+    <mat-form-field>
+      <input matInput required type="text" formControlName="rewardName" placeholder="Reward name">
+      <mat-error *ngIf="controlHasErrors(['rewardName'])">{{getControlErrorMessage(['rewardName'])}}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-select required formControlName="targetCampaignId" placeholder="Target campaign">
+        <mat-option *ngFor="let campaign of this.availableCampaigns" [value]="campaign.campaignId" >
+            {{ campaign.name }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="controlHasErrors(['targetCampaignId'])">{{getControlErrorMessage(['targetCampaignId'])}}</mat-error>
+    </mat-form-field>
+
+
+    <mat-form-field style="display: flex" [hidden]="!requiresStartDate()">
+      <input matInput required formControlName="startDate" placeholder="Start date" [matDatepicker]="startDateDatepicker">
+      <mat-datepicker-toggle matSuffix [for]="startDateDatepicker"></mat-datepicker-toggle>
+      <mat-datepicker #startDateDatepicker></mat-datepicker>
+      <mat-error *ngIf="controlHasErrors(['startDate'])">{{getControlErrorMessage(['startDate'])}}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field style="display: flex">
+      <input matInput required formControlName="endDate" [min] = "this.endDateMin" placeholder="End date" [matDatepicker]="endDateDatepicker">
+      <mat-datepicker-toggle matSuffix [for]="endDateDatepicker"></mat-datepicker-toggle>
+      <mat-datepicker #endDateDatepicker></mat-datepicker>
+      <mat-error *ngIf="controlHasErrors(['endDate'])">{{getControlErrorMessage(['endDate'])}}</mat-error>
+    </mat-form-field>
+
+
+    <div style="display: flex" formGroupName="target">
+      <mat-form-field>
+          <input matInput required type="number" formControlName="value" placeholder="Target value">
+          <mat-error *ngIf="controlHasErrors(['target', 'value'])">{{getControlErrorMessage(['target', 'value'])}}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field style="padding-left: 0.2cm">
+        <mat-select required formControlName="type" placeholder="Target type">
+          <mat-option *ngFor="let type of this.getAvailableTargetTypes()" [value]="type.value" >
+              {{ type.name }}
+            </mat-option>
+        </mat-select>
+        <mat-error *ngIf="controlHasErrors(['target','type'])">{{getControlErrorMessage(['target','type'])}}</mat-error>
+      </mat-form-field>
+      
+    </div>
+
+    <mat-form-field>
+        <input matInput required type="text" formControlName="organizerName" placeholder="Organizer name">
+        <mat-error *ngIf="controlHasErrors(['organizerName'])">{{getControlErrorMessage(['organizerName'])}}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+        <input matInput type="url" formControlName="linkToContact" placeholder="Link to contact">
+        <mat-error *ngIf="controlHasErrors(['linkToContact'])">{{getControlErrorMessage(['linkToContact'])}}</mat-error>
+    </mat-form-field>
+    
+    
+
+  </div>
+  
+
+  <div class="form-group">
+    <h5> Descriptions in different languages: </h5>
+
+    <div formArrayName="descriptions">
+      
+      <button type="button" class="btn btn-primary" (click)="addNewDescription()">Add another language</button>
+
+      <div *ngFor="let description of this.rewardForm.get('descriptions').controls; let i=index">
+          
+        <div style="padding-left: 0.8cm; padding-top: 0.3cm;">
+            <h6>
+              Language {{i+1}} <p style="display: inline" *ngIf="i === 0"> (Default language) </p>
+              <button type="button" class="btn btn-danger" [disabled]="i === 0" (click)="removeCurrentDescription(i)">Remove</button>
+            </h6>
+  
+            <div [formGroupName]="i">
+                <mat-form-field>
+                  <mat-select required formControlName="lang" placeholder="Language">
+                    <mat-option *ngFor="let language of this.getAvailableLanguages()" [value]="language.iso" >
+                        {{ language.name }}
+                      </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="controlHasErrors(['descriptions', {'idx':i}, 'lang'])">{{getControlErrorMessage(['descriptions', {'idx':i}, 'lang'])}}</mat-error>
+                </mat-form-field>
+            
+                <mat-form-field>
+                  <input matInput required type="text" formControlName="shortDescription" placeholder="Short description">
+                  <mat-error *ngIf="controlHasErrors(['descriptions', {'idx':i}, 'shortDescription'])">{{getControlErrorMessage(['descriptions', {'idx':i}, 'shortDescription'])}}</mat-error>
+                </mat-form-field>
+              
+                <mat-form-field>
+                  <textarea matInput formControlName="longDescription" rows="2" placeholder="Long description"></textarea>
+                  <mat-error *ngIf="controlHasErrors(['descriptions', {'idx':i}, 'longDescription'])">{{getControlErrorMessage(['descriptions', {'idx':i}, 'longDescription'])}}</mat-error>
+                </mat-form-field>
+            </div>
+
+        </div>
+        <mat-divider></mat-divider>            
+      </div>
+
+    </div>
+    
+  </div>
+  
+
+  <button type="submit" class="btn btn-success" [disabled]="!this.rewardForm.valid">Edit reward</button>
+</form>
